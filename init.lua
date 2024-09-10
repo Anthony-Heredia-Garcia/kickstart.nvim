@@ -170,6 +170,9 @@ vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagn
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+-- Experimental Keymaps
+vim.keymap.set('n', '<leader>sH', '<cmd>echo "Hello!"<CR>', { desc = 'Say Hello!' })
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -543,6 +546,27 @@ require('lazy').setup({
                 vim.api.nvim_clear_autocmds { group = 'kickstart-lsp-highlight', buffer = event2.buf }
               end,
             })
+
+            vim.api.nvim_create_autocmd('BufNewFile', {
+              pattern = '*',
+              callback = function()
+                local file_ext = vim.fn.expand '%e'
+
+                local greetings = {
+                  lua = 'Brazil mentioned!',
+                  py = 'Python in progress... Ssssss....',
+                  js = "Let's develop some webs",
+                }
+
+                local greeting = greetings[file_ext]
+
+                if greeting then
+                  print(greeting)
+                else
+                  print 'Hello programmer!'
+                end
+              end,
+            })
           end
 
           -- The following autocommand is used to enable inlay hints in your
@@ -576,7 +600,17 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {
+          settings = {
+            python = {
+              analysis = {
+                diagnosticSeverityOverrides = {
+                  reportPossiblyUnboundVariable = 'none',
+                },
+              },
+            },
+          },
+        },
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -597,7 +631,7 @@ require('lazy').setup({
                 callSnippet = 'Replace',
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
+              diagnostics = { disable = { 'missing-fields' } },
             },
           },
         },
@@ -616,6 +650,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'fixjson', -- Used to format json
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -634,6 +669,7 @@ require('lazy').setup({
     end,
   },
 
+  -- TODO: Keep reading from here
   { -- Autoformat
     'stevearc/conform.nvim',
     lazy = false,
@@ -793,7 +829,7 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'tokyonight-storm'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
