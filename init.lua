@@ -152,10 +152,21 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+vim.opt.scrolloff = 12
 
--- Personally don't like the word wrap, turning off
-vim.opt.wrap = false
+-- Function to toggle line wrapping
+local toggle_wrap = function()
+  if vim.wo.wrap then
+    vim.wo.wrap = false
+    vim.notify('Line wrapping disabled', vim.log.levels.INFO)
+  else
+    vim.wo.wrap = true
+    vim.notify('Line wrapping enabled', vim.log.levels.INFO)
+  end
+end
+
+-- Keybinding to toggle line wrapping
+-- vim.keymap.set('n', '<leader>w', toggle_wrap, { desc = 'Toggle line wrapping' })
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -243,6 +254,16 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    main = 'render-markdown',
+    opts = {
+      checkbox = {
+        position = 'inline',
+      },
+    },
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
+  },
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
@@ -365,7 +386,6 @@ require('lazy').setup({
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -544,27 +564,6 @@ require('lazy').setup({
               callback = function(event2)
                 vim.lsp.buf.clear_references()
                 vim.api.nvim_clear_autocmds { group = 'kickstart-lsp-highlight', buffer = event2.buf }
-              end,
-            })
-
-            vim.api.nvim_create_autocmd('BufNewFile', {
-              pattern = '*',
-              callback = function()
-                local file_ext = vim.fn.expand '%e'
-
-                local greetings = {
-                  lua = 'Brazil mentioned!',
-                  py = 'Python in progress... Ssssss....',
-                  js = "Let's develop some webs",
-                }
-
-                local greeting = greetings[file_ext]
-
-                if greeting then
-                  print(greeting)
-                else
-                  print 'Hello programmer!'
-                end
               end,
             })
           end
@@ -823,13 +822,14 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    -- 'folke/tokyonight.nvim',
+    'catppuccin/nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-storm'
+      vim.cmd.colorscheme 'catppuccin-mocha'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
