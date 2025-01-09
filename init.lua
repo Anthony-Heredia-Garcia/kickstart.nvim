@@ -246,6 +246,7 @@ require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'christoomey/vim-tmux-navigator', -- Navigate between tmux and nvim panes
+  'alvan/vim-closetag', -- Automatically close html tags
 
   -- Color Schemes
   'ellisonleao/gruvbox.nvim',
@@ -253,6 +254,14 @@ require('lazy').setup({
   'rebelot/kanagawa.nvim',
   'marko-cerovac/material.nvim',
   'rose-pine/neovim',
+
+  -- CSV file viewer
+  {
+    'hat0uma/csvview.nvim',
+    config = function()
+      require('csvview').setup { view = { display_mode = 'border' } }
+    end,
+  },
 
   -- File Explorer
   {
@@ -736,7 +745,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { c = true, cpp = true, javascriptreact = true, javascript = true }
         return {
           timeout_ms = 500,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
