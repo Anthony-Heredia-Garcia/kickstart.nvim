@@ -246,7 +246,6 @@ require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'christoomey/vim-tmux-navigator', -- Navigate between tmux and nvim panes
-  'alvan/vim-closetag', -- Automatically close html tags
 
   -- Color Schemes
   'ellisonleao/gruvbox.nvim',
@@ -255,36 +254,6 @@ require('lazy').setup({
   'marko-cerovac/material.nvim',
   'rose-pine/neovim',
 
-  -- File Explorer
-  {
-    'stevearc/oil.nvim',
-    ---@module 'oil'
-    ---@type oil.SetupOpts
-    opts = {
-      view_options = {
-        show_hidden = true,
-      },
-    },
-    -- Optional dependencies
-    dependencies = { { 'echasnovski/mini.icons', opts = {} } },
-    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if prefer nvim-web-devicons
-  },
-
-  -- Splash Screen on Startup
-  {
-    'nvimdev/dashboard-nvim',
-    event = 'VimEnter',
-    config = function()
-      require('dashboard').setup {
-        -- config
-        theme = 'hyper',
-        config = {
-          week_header = { enable = true },
-        },
-      }
-    end,
-    dependencies = { { 'nvim-tree/nvim-web-devicons' } },
-  },
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -737,7 +706,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true, javascriptreact = true, javascript = true }
+        local disable_filetypes = { c = true, cpp = true }
         return {
           timeout_ms = 500,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
@@ -751,8 +720,8 @@ require('lazy').setup({
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        -- javascript = { 'prettierd', 'prettier' },
-        -- javascriptreact = { 'prettierd', 'prettier' },
+        javascript = { 'prettierd', 'prettier' },
+        javascriptreact = { 'prettierd', 'prettier' },
       },
     },
   },
@@ -931,7 +900,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'javascript', 'typescript', 'tsx' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -1002,7 +971,6 @@ require('lazy').setup({
       lazy = '💤 ',
     },
   },
-  vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' }),
 })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
