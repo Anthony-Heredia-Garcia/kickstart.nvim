@@ -621,7 +621,7 @@ require('lazy').setup({
           settings = {
             python = {
               analysis = {
-                typeCheckingMode = 'strict',
+                typeCheckingMode = 'basic',
                 diagnosticSeverityOverrides = {
                   reportPossiblyUnboundVariable = 'none',
                 },
@@ -721,8 +721,8 @@ require('lazy').setup({
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        javascript = { 'prettierd', 'prettier' },
-        javascriptreact = { 'prettierd', 'prettier' },
+        -- javascript = { 'prettierd', 'prettier' },
+        -- javascriptreact = { 'prettierd', 'prettier' },
       },
     },
   },
@@ -846,6 +846,11 @@ require('lazy').setup({
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
     end,
+    -- Force highlight group for markdown files
+    vim.api.nvim_set_hl(0, '@markup.strikethrough', {
+      strikethrough = true,
+      force = true,
+    }),
   },
 
   -- Highlight todo, notes, etc in comments
@@ -892,7 +897,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'javascript', 'typescript', 'tsx' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'vim', 'vimdoc', 'javascript', 'typescript', 'tsx' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -930,7 +935,7 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',

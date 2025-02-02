@@ -6,4 +6,5 @@ return {
       require('csvview').setup { view = { display_mode = 'border' } }
     end,
   },
+  vim.keymap.set('n', '<leader>csv', '<CMD>CsvViewToggle<CR>', { desc = 'Toggle CSV Viewer' }),
 }
