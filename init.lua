@@ -93,6 +93,12 @@ vim.g.maplocalleader = ' '
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
+-- Try to enable code folding by default
+vim.o.foldmethod = 'expr'
+vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
+vim.o.foldenable = true -- Enable folding by default
+vim.o.foldlevel = 99
+
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -182,7 +188,26 @@ vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagn
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Experimental Keymaps
-vim.keymap.set('n', '<leader>sH', '<cmd>echo "Hello!"<CR>', { desc = 'Say Hello!' })
+vim.keymap.set('n', 'gt', '<cmd>tab split | lua vim.lsp.buf.definition()<CR>', {})
+
+-- Follow online links, or edit file depending on prefix
+vim.keymap.set('n', 'gx', function()
+  local url = vim.fn.expand '<cfile>' -- get text under cursor
+
+  if url:match '^https?://' then
+    -- it's a url, open using xdg
+    vim.fn.jobstart({ 'xdg-open', url }, { detach = true })
+  else
+    -- assume it's a filepath
+    vim.cmd('edit ' .. url)
+  end
+end, { buffer = true, desc = 'Open link or file under cursor' })
+
+-- Cycle forward through tabs with Tab
+vim.keymap.set('n', '<Tab>', ':tabnext<CR>', { noremap = true, silent = true })
+
+-- Cycle backward through tabs with Shift+Tab
+vim.keymap.set('n', '<S-Tab>', ':tabprevious<CR>', { noremap = true, silent = true })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -717,12 +742,12 @@ require('lazy').setup({
         lua = { 'stylua' },
         scss = {},
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'isort', 'black' },
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
         -- javascript = { 'prettierd', 'prettier' },
-        -- javascriptreact = { 'prettierd', 'prettier' },
+        javascriptreact = { 'prettierd', 'prettier' },
       },
     },
   },
