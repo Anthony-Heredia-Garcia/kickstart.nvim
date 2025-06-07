@@ -158,7 +158,7 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 12
+vim.opt.scrolloff = 999
 
 -- Function to toggle line wrapping
 local toggle_wrap = function()
@@ -188,7 +188,30 @@ vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagn
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Experimental Keymaps
-vim.keymap.set('n', 'gt', '<cmd>tab split | lua vim.lsp.buf.definition()<CR>', {})
+vim.keymap.set('n', '<leader>tc', function()
+  local line = vim.api.nvim_get_current_line()
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  local new_line = nil
+
+  -- Match indentation, checkbox, and task text separately
+  local indent, box, text = line:match '^(%s*%- )%[([ Xx])%]%s*(.*)$'
+
+  if indent and box and text then
+    if box == ' ' then
+      -- [ ] -> [X] and add strikethrough
+      new_line = string.format('%s[X] ~%s~', indent, text)
+    elseif box:upper() == 'X' then
+      -- [X] -> [ ] and remove strikethrough
+      -- Remove ~ wrapping only if present
+      local clean_text = text:match '^~(.*)~$' or text
+      new_line = string.format('%s[ ] %s', indent, clean_text)
+    end
+  end
+
+  if new_line then
+    vim.api.nvim_buf_set_lines(0, row - 1, row, false, { new_line })
+  end
+end, { desc = 'Toggle checkbox + strikethrough (with indent)', noremap = true, silent = true })
 
 -- Follow online links, or edit file depending on prefix
 vim.keymap.set('n', 'gx', function()
@@ -204,10 +227,10 @@ vim.keymap.set('n', 'gx', function()
 end, { buffer = true, desc = 'Open link or file under cursor' })
 
 -- Cycle forward through tabs with Tab
-vim.keymap.set('n', '<Tab>', ':tabnext<CR>', { noremap = true, silent = true })
+-- vim.keymap.set('n', '<Tab>', ':tabnext<CR>', { noremap = true, silent = true })
 
 -- Cycle backward through tabs with Shift+Tab
-vim.keymap.set('n', '<S-Tab>', ':tabprevious<CR>', { noremap = true, silent = true })
+-- vim.keymap.set('n', '<S-Tab>', ':tabprevious<CR>', { noremap = true, silent = true })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -306,18 +329,18 @@ require('lazy').setup({
   --    require('gitsigns').setup({ ... })
   --
   -- See `:help gitsigns` to understand what the configuration keys do
-  { -- Adds git related signs to the gutter, as well as utilities for managing changes
-    'lewis6991/gitsigns.nvim',
-    opts = {
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
-    },
-  },
+  -- { -- Adds git related signs to the gutter, as well as utilities for managing changes
+  --   'lewis6991/gitsigns.nvim',
+  --   opts = {
+  --     signs = {
+  --       add = { text = '+' },
+  --       change = { text = '~' },
+  --       delete = { text = '_' },
+  --       topdelete = { text = '‾' },
+  --       changedelete = { text = '~' },
+  --     },
+  --   },
+  -- },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -451,6 +474,10 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+
+      vim.keymap.set('n', '<leader>sp', function()
+        builtin.planets { show_pluto = true, show_moon = true }
+      end, { desc = '[S]earch [P]lanets' })
 
       -- Live preview colorscheme picker
       vim.keymap.set('n', '<leader>sc', function()
@@ -734,7 +761,7 @@ require('lazy').setup({
         -- languages here or re-enable it for the disabled ones.
         local disable_filetypes = { c = true, cpp = true }
         return {
-          timeout_ms = 500,
+          timeout_ms = 5000,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
         }
       end,
@@ -746,7 +773,7 @@ require('lazy').setup({
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        -- javascript = { 'prettierd', 'prettier' },
+        javascript = { 'prettierd', 'prettier' },
         javascriptreact = { 'prettierd', 'prettier' },
       },
     },
@@ -961,6 +988,7 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.gitsigns',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
