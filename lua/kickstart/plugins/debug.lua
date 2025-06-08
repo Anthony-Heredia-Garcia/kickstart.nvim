@@ -46,10 +46,11 @@ return {
     }
 
     -- Basic debugging keymaps, feel free to change to your liking!
-    vim.keymap.set('n', '<leader>dbs', dap.continue, { desc = 'Debug: Start/Continue' })
-    vim.keymap.set('n', '<leader>dbi', dap.step_into, { desc = 'Debug: Step [i]nto' })
-    vim.keymap.set('n', '<leader>dbo', dap.step_over, { desc = 'Debug: Step [o]ver' })
-    vim.keymap.set('n', '<leader>dbO', dap.step_out, { desc = 'Debug: Step [O]ut' })
+    vim.keymap.set('n', '<leader>db', dap.continue, { desc = 'Debug: Start/Continue' })
+    vim.keymap.set('n', '<leader>di', dap.step_into, { desc = 'Debug: Step [i]nto' })
+    vim.keymap.set('n', '<leader>do', dap.step_over, { desc = 'Debug: Step [o]ver' })
+    vim.keymap.set('n', '<leader>dO', dap.step_out, { desc = 'Debug: Step [O]ut' })
+    vim.keymap.set('n', '<leader>dx', dap.terminate, { desc = 'Debug: Stop' })
     vim.keymap.set('n', '<leader>b', dap.toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
     vim.keymap.set('n', '<leader>B', function()
       dap.set_breakpoint(vim.fn.input 'Breakpoint condition: ')
@@ -65,7 +66,7 @@ return {
     }
 
     -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
-    vim.keymap.set('n', '<leader>dbt', dapui.toggle, { desc = 'Debug: [T]oggle the ui' })
+    vim.keymap.set('n', '<leader>dt', dapui.toggle, { desc = 'Debug: [T]oggle the ui' })
 
     dap.listeners.after.event_initialized['dapui_config'] = dapui.open
 
@@ -73,6 +74,56 @@ return {
     -- Uncomment to turn back on
     -- dap.listeners.before.event_terminated['dapui_config'] = dapui.close
     -- dap.listeners.before.event_exited['dapui_config'] = dapui.close
+
+    dap.adapters.python = function(callback, _)
+      local cwd = vim.fn.getcwd()
+      local venv_python = cwd .. '/bin/python'
+
+      if vim.fn.executable(venv_python) == 1 then
+        callback {
+          type = 'executable',
+          command = venv_python,
+          args = { '-m', 'debugpy.adapter' },
+        }
+      else
+        -- Fallback to system python if no virtualenv is found
+        callback {
+          type = 'executable',
+          command = 'python3',
+          args = { '-m', 'debugpy.adapter' },
+        }
+      end
+    end
+
+    -- dap.adapters.python = {
+    --   type = 'executable',
+    --   command = '/opt/homebrew/opt/python@3.8/bin/python3.8',
+    --   args = { '-m', 'debugpy.adapter' },
+    -- }
+
+    dap.configurations.python = {
+      {
+        type = 'python',
+        request = 'launch',
+        name = 'Run Current File',
+        program = '${file}',
+        console = 'integratedTerminal',
+      },
+    }
+
+    if vim.fn.getcwd():find 'edmod%-api' then
+      table.insert(dap.configurations.python, {
+        type = 'python',
+        request = 'launch',
+        name = 'Run Django Management Command',
+        program = '${workspaceFolder}/manage.py',
+        args = function()
+          local input = vim.fn.input 'Management command and args: '
+          return vim.split(input, ' ')
+        end,
+        django = true,
+      })
+    end
 
     dap.adapters['pwa-node'] = {
       type = 'server',
