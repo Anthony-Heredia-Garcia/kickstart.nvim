@@ -302,6 +302,13 @@ require('lazy').setup({
   'marko-cerovac/material.nvim',
   'rose-pine/neovim',
 
+  {
+    'rcarriga/nvim-notify',
+    config = function()
+      vim.notify = require 'notify'
+    end,
+  },
+
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
