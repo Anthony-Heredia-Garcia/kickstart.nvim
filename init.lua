@@ -663,9 +663,6 @@ require('lazy').setup({
     opts = {
       notify_on_error = false,
       format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
         local disable_filetypes = { c = true, cpp = true }
         return {
           timeout_ms = 10000,
@@ -675,15 +672,30 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         scss = {},
-        -- Conform can also run multiple formatters sequentially
         python = { 'isort', 'black' },
         htmldjango = { 'djlint' },
-        --
-        -- You can use a sub-list to tell conform to run *until* a formatter
-        -- is found.
         javascript = { 'prettierd', 'prettier' },
         javascriptreact = { 'prettierd', 'prettier' },
         typescript = { 'prettierd', 'prettier' },
+        sql = { 'sqlfluff_fix' },
+        mysql = { 'sqlfluff_fix' },
+      },
+      formatters = {
+        sqlfluff_fix = {
+          -- Use Mason’s installed binary
+          command = vim.fn.stdpath 'data' .. '/mason/bin/sqlfluff',
+          -- "fix" automatically reformats SQL code
+          args = { 'fix', '--dialect', 'mysql', '-' },
+          stdin = true,
+          -- Make sure it always runs in the current buffer’s directory
+          cwd = function(ctx)
+            return vim.fn.expand '%:p:h'
+          end,
+          -- Optional: suppress noisy sqlfluff errors if no .sqlfluff config exists
+          env = {
+            SQLFLUFF_CONFIG = '/dev/null',
+          },
+        },
       },
     },
   },
