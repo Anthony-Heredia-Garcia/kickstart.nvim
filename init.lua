@@ -305,7 +305,22 @@ require('lazy').setup({
   {
     'rcarriga/nvim-notify',
     config = function()
-      vim.notify = require 'notify'
+      local notify = require 'notify'
+
+      vim.notify = function(msg, level, opts)
+        if type(msg) == 'string' then
+          -- Silence known Neovim LSP deprecation noise
+          if
+            msg:match 'position_encoding param is required'
+            or msg:match 'vim%.lsp%.util%.jump_to_location'
+            or msg:match 'client%.supports_method is deprecated'
+          then
+            return
+          end
+        end
+
+        notify(msg, level, opts)
+      end
     end,
   },
 
