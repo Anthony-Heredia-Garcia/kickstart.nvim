@@ -181,6 +181,18 @@ vim.keymap.set('n', '<leader>w', toggle_wrap, { desc = 'Toggle line wrapping' })
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
+-- Filter out specific Pyright diagnostics globally
+local orig_publishDiagnostics = vim.lsp.handlers['textDocument/publishDiagnostics']
+vim.lsp.handlers['textDocument/publishDiagnostics'] = function(err, result, ctx, config)
+  local client = vim.lsp.get_client_by_id(ctx.client_id)
+  if client and client.name == 'pyright' and result and result.diagnostics then
+    result.diagnostics = vim.tbl_filter(function(d)
+      return d.code ~= 'reportPossiblyUnboundVariable'
+    end, result.diagnostics)
+  end
+  orig_publishDiagnostics(err, result, ctx, config)
+end
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
@@ -334,13 +346,14 @@ require('lazy').setup({
   --    require('Comment').setup({})
   {
     'MeanderingProgrammer/render-markdown.nvim',
-    main = 'render-markdown',
-    opts = {
-      checkbox = {
-        position = 'inline',
-      },
+    ft = { 'markdown' },
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-tree/nvim-web-devicons',
     },
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('render-markdown').setup {}
+    end,
   },
 
   -- "gc" to comment visual regions/lines
@@ -617,9 +630,6 @@ require('lazy').setup({
             python = {
               analysis = {
                 typeCheckingMode = 'basic',
-                diagnosticSeverityOverrides = {
-                  reportPossiblyUnboundVariable = 'none',
-                },
               },
             },
           },
