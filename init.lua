@@ -908,6 +908,43 @@ require('lazy').setup({
       -- Ensure all listed parsers are installed
       require('nvim-treesitter').install(opts.ensure_installed)
 
+      -- Compatibility shims for telescope's 0.1.x branch, which uses APIs
+      -- removed from the new nvim-treesitter.
+
+      -- 1. ft_to_lang() and get_parser() were removed from nvim-treesitter.parsers.
+      local ok, parsers = pcall(require, 'nvim-treesitter.parsers')
+      if ok then
+        if not parsers.ft_to_lang then
+          parsers.ft_to_lang = function(ft)
+            return vim.treesitter.language.get_lang(ft) or ft
+          end
+        end
+        if not parsers.get_parser then
+          parsers.get_parser = function(bufnr, lang)
+            return vim.treesitter.get_parser(bufnr, lang)
+          end
+        end
+      end
+
+      -- 2. nvim-treesitter.configs no longer exists. Register a shim so that
+      --    telescope's require('nvim-treesitter.configs') returns a valid object.
+      package.preload['nvim-treesitter.configs'] = function()
+        return {
+          is_enabled = function(module, lang, _bufnr)
+            if module == 'highlight' then
+              return pcall(vim.treesitter.language.inspect, lang)
+            end
+            return false
+          end,
+          get_module = function(module)
+            if module == 'highlight' then
+              return { additional_vim_regex_highlighting = false }
+            end
+            return {}
+          end,
+        }
+      end
+
       -- The new nvim-treesitter no longer enables highlighting itself.
       -- Enable Neovim's built-in treesitter highlighting for any filetype
       -- that has a parser available.
