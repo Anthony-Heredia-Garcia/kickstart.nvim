@@ -623,6 +623,8 @@ require('lazy').setup({
 
       -- === LSP Server Configurations ===
       local servers = {
+        ts_ls = {},
+        cssls = {},
         pyright = {
           settings = {
             python = {
@@ -660,6 +662,9 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua',
         'fixjson',
+        'prettierd',
+        'eslint_d',
+        'stylelint',
       })
 
       require('mason-tool-installer').setup {
@@ -671,7 +676,8 @@ require('lazy').setup({
         ensure_installed = vim.tbl_keys(servers),
         handlers = {
           function(server_name)
-            local server = servers[server_name] or {}
+            local server = servers[server_name]
+            if not server then return end
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
             require('lspconfig')[server_name].setup(server)
           end,
@@ -704,7 +710,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        scss = {},
+        scss = { 'prettierd', 'prettier' },
         python = { 'isort', 'ruff_format' },
         htmldjango = { 'djlint' },
         javascript = { 'prettierd', 'prettier' },
@@ -904,7 +910,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'python', 'vim', 'vimdoc', 'javascript', 'typescript', 'tsx' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'python', 'vim', 'vimdoc', 'javascript', 'typescript', 'tsx', 'css' },
     },
     config = function(_, opts)
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -983,7 +989,7 @@ require('lazy').setup({
   require 'kickstart.plugins.debug',
   require 'kickstart.plugins.gitsigns',
   -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
