@@ -325,7 +325,6 @@ require('lazy').setup({
           if
             msg:match 'position_encoding param is required'
             or msg:match 'vim%.lsp%.util%.jump_to_location'
-            or msg:match 'client%.supports_method is deprecated'
           then
             return
           end
