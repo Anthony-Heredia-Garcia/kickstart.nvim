@@ -706,7 +706,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         scss = {},
-        python = { 'isort', 'black' },
+        python = { 'isort', 'ruff_format' },
         htmldjango = { 'djlint' },
         javascript = { 'prettierd', 'prettier' },
         javascriptreact = { 'prettierd', 'prettier' },
