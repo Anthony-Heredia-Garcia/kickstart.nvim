@@ -95,7 +95,7 @@ vim.g.have_nerd_font = true
 
 -- Try to enable code folding by default
 vim.o.foldmethod = 'expr'
-vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
+vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.o.foldenable = true -- Enable folding by default
 vim.o.foldlevel = 99
 
@@ -549,11 +549,10 @@ require('lazy').setup({
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = {
-      { 'williamboman/mason.nvim', config = true }, -- Must load first
-      'williamboman/mason-lspconfig.nvim',
+      { 'mason-org/mason.nvim', config = true }, -- Must load first
+      'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
       { 'j-hui/fidget.nvim', opts = {} },
-      { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
       -- === LSP Keymaps on Attach ===
@@ -578,7 +577,7 @@ require('lazy').setup({
           local client = vim.lsp.get_client_by_id(event.data.client_id)
 
           -- Document highlight
-          if client and client.server_capabilities.documentHighlightProvider then
+          if client and client.supports_method('textDocument/documentHighlight') then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
@@ -635,6 +634,16 @@ require('lazy').setup({
           },
         },
         lua_ls = {
+          on_init = function(client)
+            local path = client.workspace_folders and client.workspace_folders[1] and client.workspace_folders[1].name
+            if path and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc')) then
+              return
+            end
+            client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua or {}, {
+              runtime = { version = 'LuaJIT' },
+              workspace = { checkThirdParty = false, library = { vim.env.VIMRUNTIME } },
+            })
+          end,
           settings = {
             Lua = {
               completion = { callSnippet = 'Replace' },
