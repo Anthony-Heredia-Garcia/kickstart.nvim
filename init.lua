@@ -577,7 +577,7 @@ require('lazy').setup({
           local client = vim.lsp.get_client_by_id(event.data.client_id)
 
           -- Document highlight
-          if client and client.supports_method('textDocument/documentHighlight') then
+          if client and client:supports_method('textDocument/documentHighlight') then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
@@ -599,7 +599,7 @@ require('lazy').setup({
           end
 
           -- Toggle inlay hints
-          if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
+          if client and client:supports_method('textDocument/inlayHint') and vim.lsp.inlay_hint then
             map('<leader>th', function()
               ---@diagnostic disable-next-line: missing-parameter
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
