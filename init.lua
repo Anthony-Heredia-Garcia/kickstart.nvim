@@ -182,12 +182,17 @@ vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Filter out specific Pyright diagnostics globally
+local pyright_ignored_codes = {
+  reportPossiblyUnboundVariable = true,
+  reportPrivateImportUsage = true,
+  reportIncompatibleVariableOverride = true,
+}
 local orig_publishDiagnostics = vim.lsp.handlers['textDocument/publishDiagnostics']
 vim.lsp.handlers['textDocument/publishDiagnostics'] = function(err, result, ctx, config)
   local client = vim.lsp.get_client_by_id(ctx.client_id)
   if client and client.name == 'pyright' and result and result.diagnostics then
     result.diagnostics = vim.tbl_filter(function(d)
-      return d.code ~= 'reportPossiblyUnboundVariable'
+      return not pyright_ignored_codes[d.code]
     end, result.diagnostics)
   end
   orig_publishDiagnostics(err, result, ctx, config)
@@ -322,10 +327,7 @@ require('lazy').setup({
       vim.notify = function(msg, level, opts)
         if type(msg) == 'string' then
           -- Silence known Neovim LSP deprecation noise
-          if
-            msg:match 'position_encoding param is required'
-            or msg:match 'vim%.lsp%.util%.jump_to_location'
-          then
+          if msg:match 'position_encoding param is required' or msg:match 'vim%.lsp%.util%.jump_to_location' then
             return
           end
         end
@@ -576,7 +578,7 @@ require('lazy').setup({
           local client = vim.lsp.get_client_by_id(event.data.client_id)
 
           -- Document highlight
-          if client and client:supports_method('textDocument/documentHighlight') then
+          if client and client:supports_method 'textDocument/documentHighlight' then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
@@ -598,7 +600,7 @@ require('lazy').setup({
           end
 
           -- Toggle inlay hints
-          if client and client:supports_method('textDocument/inlayHint') and vim.lsp.inlay_hint then
+          if client and client:supports_method 'textDocument/inlayHint' and vim.lsp.inlay_hint then
             map('<leader>th', function()
               ---@diagnostic disable-next-line: missing-parameter
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
@@ -630,6 +632,8 @@ require('lazy').setup({
             python = {
               analysis = {
                 typeCheckingMode = 'basic',
+                reportPrivateImportUsage = 'none',
+                reportIncompatibleVariableOverride = 'none',
               },
             },
           },
@@ -677,7 +681,9 @@ require('lazy').setup({
         handlers = {
           function(server_name)
             local server = servers[server_name]
-            if not server then return end
+            if not server then
+              return
+            end
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
             require('lspconfig')[server_name].setup(server)
           end,
@@ -724,16 +730,8 @@ require('lazy').setup({
           -- Use Mason’s installed binary
           command = vim.fn.stdpath 'data' .. '/mason/bin/sqlfluff',
           -- "fix" automatically reformats SQL code
-          args = { 'fix', '--dialect', 'mysql', '-' },
+          args = { 'fix', '--config', vim.fn.expand '~/.sqlfluff', '-' },
           stdin = true,
-          -- Make sure it always runs in the current buffer’s directory
-          cwd = function(ctx)
-            return vim.fn.expand '%:p:h'
-          end,
-          -- Optional: suppress noisy sqlfluff errors if no .sqlfluff config exists
-          env = {
-            SQLFLUFF_CONFIG = '/dev/null',
-          },
         },
       },
     },
@@ -910,7 +908,23 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'python', 'vim', 'vimdoc', 'javascript', 'typescript', 'tsx', 'css' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'python',
+        'vim',
+        'vimdoc',
+        'javascript',
+        'typescript',
+        'tsx',
+        'css',
+      },
     },
     config = function(_, opts)
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
