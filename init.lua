@@ -260,6 +260,7 @@ end, { buffer = true, desc = 'Open link or file under cursor' })
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
+
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 -- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
@@ -313,7 +314,18 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
-  'christoomey/vim-tmux-navigator', -- Navigate between tmux and nvim panes
+  {
+    'christoomey/vim-tmux-navigator',
+    config = function()
+      -- vim-tmux-navigator's built-in tnoremap uses <C-w>: which snacks terminal doesn't honour,
+      -- causing the command text to be sent to the terminal process instead of executing it.
+      -- Override with <C-\><C-n> which properly exits terminal mode first.
+      vim.keymap.set('t', '<C-h>', '<C-\\><C-n>:TmuxNavigateLeft<CR>', { silent = true })
+      vim.keymap.set('t', '<C-j>', '<C-\\><C-n>:TmuxNavigateDown<CR>', { silent = true })
+      vim.keymap.set('t', '<C-k>', '<C-\\><C-n>:TmuxNavigateUp<CR>', { silent = true })
+      vim.keymap.set('t', '<C-l>', '<C-\\><C-n>:TmuxNavigateRight<CR>', { silent = true })
+    end,
+  }, -- Navigate between tmux and nvim panes
 
   -- Color Schemes
   'ellisonleao/gruvbox.nvim',
