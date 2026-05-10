@@ -315,6 +315,7 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  { 'folke/lazydev.nvim', ft = 'lua', opts = {} },
   {
     'christoomey/vim-tmux-navigator',
     config = function()
@@ -655,16 +656,6 @@ require('lazy').setup({
           },
         },
         lua_ls = {
-          on_init = function(client)
-            local path = client.workspace_folders and client.workspace_folders[1] and client.workspace_folders[1].name
-            if path and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc')) then
-              return
-            end
-            client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua or {}, {
-              runtime = { version = 'LuaJIT' },
-              workspace = { checkThirdParty = false, library = { vim.env.VIMRUNTIME } },
-            })
-          end,
           settings = {
             Lua = {
               completion = { callSnippet = 'Replace' },
