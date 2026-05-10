@@ -204,8 +204,12 @@ vim.lsp.handlers['textDocument/publishDiagnostics'] = function(err, result, ctx,
 end
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
+vim.keymap.set('n', '[d', function()
+  vim.diagnostic.jump { count = -1, float = true }
+end, { desc = 'Go to previous [D]iagnostic message' })
+vim.keymap.set('n', ']d', function()
+  vim.diagnostic.jump { count = 1, float = true }
+end, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
@@ -341,6 +345,7 @@ require('lazy').setup({
     config = function()
       local notify = require 'notify'
 
+      ---@diagnostic disable-next-line: duplicate-set-field
       vim.notify = function(msg, level, opts)
         if type(msg) == 'string' then
           -- Silence known Neovim LSP deprecation noise
@@ -982,11 +987,13 @@ require('lazy').setup({
       local ok, parsers = pcall(require, 'nvim-treesitter.parsers')
       if ok then
         if not parsers.ft_to_lang then
+          ---@diagnostic disable-next-line: assign-type-mismatch
           parsers.ft_to_lang = function(ft)
             return vim.treesitter.language.get_lang(ft) or ft
           end
         end
         if not parsers.get_parser then
+          ---@diagnostic disable-next-line: assign-type-mismatch
           parsers.get_parser = function(bufnr, lang)
             return vim.treesitter.get_parser(bufnr, lang)
           end
@@ -997,7 +1004,7 @@ require('lazy').setup({
       --    telescope's require('nvim-treesitter.configs') returns a valid object.
       package.preload['nvim-treesitter.configs'] = function()
         return {
-          is_enabled = function(module, lang, _bufnr)
+          is_enabled = function(module, lang)
             if module == 'highlight' then
               return pcall(vim.treesitter.language.inspect, lang)
             end
