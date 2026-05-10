@@ -84,6 +84,9 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+-- Ensure nvm-managed Node.js (v22) is available to LSP servers like ts_ls
+vim.env.PATH = vim.env.HOME .. "/.nvm/versions/node/v22.22.2/bin:" .. vim.env.PATH
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
