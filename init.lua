@@ -84,8 +84,10 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+vim.opt.termguicolors = true
+
 -- Ensure nvm-managed Node.js (v22) is available to LSP servers like ts_ls
-vim.env.PATH = vim.env.HOME .. "/.nvm/versions/node/v22.22.2/bin:" .. vim.env.PATH
+vim.env.PATH = vim.env.HOME .. '/.nvm/versions/node/v22.22.2/bin:' .. vim.env.PATH
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -259,7 +261,6 @@ end, { buffer = true, desc = 'Open link or file under cursor' })
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
-
 
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
@@ -911,8 +912,35 @@ require('lazy').setup({
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
+      statusline.section_git = function()
+        return ''
+      end
+
+      ---@diagnostic disable-next-line: duplicate-set-field
+      statusline.section_diff = function()
+        return ''
+      end
+
+      ---@diagnostic disable-next-line: duplicate-set-field
       statusline.section_location = function()
         return '%2l:%-2v'
+      end
+
+      ---@diagnostic disable-next-line: duplicate-set-field
+      statusline.section_fileinfo = function()
+        local ft = vim.bo.filetype
+        if ft == '' then
+          return ''
+        end
+        if not vim.g.have_nerd_font then
+          return ft
+        end
+        local ok, icons = pcall(require, 'mini.icons')
+        if not ok then
+          return ft
+        end
+        local icon = icons.get('filetype', ft)
+        return icon ~= '' and (icon .. ' ' .. ft) or ft
       end
 
       -- ... and there is more!
