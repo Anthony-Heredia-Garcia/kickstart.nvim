@@ -188,6 +188,7 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Filter out specific Pyright diagnostics globally
 local pyright_ignored_codes = {
+  reportPossiblyUnbound = true,
   reportPossiblyUnboundVariable = true,
   reportPrivateImportUsage = true,
   reportIncompatibleVariableOverride = true,
@@ -212,6 +213,10 @@ vim.keymap.set('n', ']d', function()
 end, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>lr', function()
+  vim.lsp.stop_client(vim.lsp.get_clients())
+  vim.cmd 'e'
+end, { desc = '[L]SP [R]estart' })
 
 -- Experimental Keymaps
 vim.keymap.set('n', '<leader>tc', function()
@@ -656,6 +661,7 @@ require('lazy').setup({
                 typeCheckingMode = 'basic',
                 reportPrivateImportUsage = 'none',
                 reportIncompatibleVariableOverride = 'none',
+                reportPossiblyUnboundVariable = 'none',
               },
             },
           },
@@ -678,8 +684,6 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua',
         'fixjson',
-        'prettierd',
-        'eslint_d',
         'stylelint',
       })
 
@@ -701,6 +705,9 @@ require('lazy').setup({
           end,
         },
       }
+
+      vim.lsp.config('biome', { capabilities = capabilities })
+      vim.lsp.enable 'biome'
     end,
   },
 
@@ -731,9 +738,11 @@ require('lazy').setup({
         scss = { 'prettierd', 'prettier' },
         python = { 'isort', 'ruff_format' },
         htmldjango = { 'djlint' },
-        javascript = { 'prettierd', 'prettier' },
-        javascriptreact = { 'prettierd', 'prettier' },
-        typescript = { 'prettierd', 'prettier' },
+        javascript = { 'biome' },
+        javascriptreact = { 'biome' },
+        typescript = { 'biome' },
+        typescriptreact = { 'biome' },
+        json = { 'biome' },
         sql = { 'sqlfluff_fix' },
         mysql = { 'sqlfluff_fix' },
       },
