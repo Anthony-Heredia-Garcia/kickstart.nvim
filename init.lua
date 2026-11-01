@@ -323,7 +323,9 @@ vim.opt.rtp:prepend(lazypath)
 -- ANTHONY PLUGINS
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  -- Detect tabstop and shiftwidth automatically. Language-specific indent
+  -- overrides live in after/ftplugin/ (for example real tabs in Makefiles).
+  'tpope/vim-sleuth',
   { 'folke/lazydev.nvim', ft = 'lua', opts = {} },
   {
     'christoomey/vim-tmux-navigator',
