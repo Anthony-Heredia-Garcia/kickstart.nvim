@@ -35,15 +35,46 @@ return {
       end)
     end
 
-    local username = vim.env.DB_PROD_USERNAME or ''
-    local password = vim.env.DB_PROD_PASSWORD or ''
-    local host = vim.env.DB_PROD_HOST or ''
-    local database = vim.env.DB_PROD_DATABASE or ''
+    -- Fetched from 1Password on first use (opening DBUI), then cached for this session.
+    local prod_url
+    local function resolve_prod_url()
+      if prod_url then
+        return prod_url
+      end
+
+      -- stylua: ignore
+      local result = vim
+        .system({
+          'op', 'item', 'get', 'PROD-READ-ONLY',
+          '--vault', 'Private',
+          '--fields', 'label=server,label=database,label=username,label=password',
+          '--reveal',
+          '--format', 'json',
+        }, { text = true })
+        :wait()
+      if result.code ~= 0 then
+        error('1Password lookup failed: ' .. vim.trim(result.stderr or ''))
+      end
+
+      local fields = {}
+      for _, field in ipairs(vim.json.decode(result.stdout)) do
+        fields[field.label] = field.value
+      end
+
+      -- dadbod passes query params to the mysql client as --flags; give up if unreachable (e.g. off home wifi)
+      prod_url = ('mysql://%s:%s@%s/%s?connect_timeout=3'):format(
+        urlencode(fields.username),
+        urlencode(fields.password),
+        fields.server or '',
+        fields.database or ''
+      )
+      return prod_url
+    end
 
     vim.g.dbs = {
       {
         name = 'prod-read-only',
-        url = ('mysql://%s:%s@%s/%s'):format(urlencode(username), urlencode(password), host, database),
+        url = resolve_prod_url,
       },
     }
   end,
